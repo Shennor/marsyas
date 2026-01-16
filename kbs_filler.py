@@ -8,30 +8,28 @@ fillers = [
 
 # fill tests from logs
 def fill_tests(kbs_text, log_info):
-    tests_status_path = os.path.join(log_info["folder"], log_info["machine"], 
+    tests_status_folder_path = os.path.join(log_info["folder"], log_info["machine"], 
         "status")
-    if not os.path.isdir(tests_status_path):
-        print("ERROR: No tests status folder {tests_status_path}")
+    if not os.path.isdir(tests_status_folder_path):
+        print(f"ERROR: No tests status folder {tests_status_path}")
         return kbs_text
     # for all files add to kbs text object
-    for filename in os.listdir(tests_status_path):
+    for filename in os.listdir(tests_status_folder_path):
         test_name = filename.split('.')[0]
         kbs_text += f"""
 
 ОБЪЕКТ тест_{test_name}
 ГРУППА тест
 АТРИБУТЫ
-  АТРИБУТ имя
-    ТИП тип_имя_теста
-  АТРИБУТ версия
-    ТИП тип_версия_теста
+  АТРИБУТ статус
+    ТИП тип_статус_теста
   АТРИБУТ причина
     ТИП тип_причина
   АТРИБУТ рекомендация
     ТИП тип_рекомендация
 КОММЕНТАРИЙ тест добавлен исходя из наличия файла {os.path.join(
-    tests_status_path, filename)} в логах
-         """
+    tests_status_folder_path, filename)} в логах
+        """
     return kbs_text
     
 def update_kbs(original_kbs_path, log_info):

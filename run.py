@@ -21,7 +21,8 @@ parsers = []
 
 modules = [
 "common_linux_parsers",
-"machine_info_parsers"
+"machine_info_parsers",
+"test_info_parsers"
 ]
 
 for module_name in modules:
@@ -78,11 +79,10 @@ def main():
     solver = Solver(knowledge_base, SOLVER_MODE.forwards, goals=[])
     print("Parsing facts to working memory...")
     solver = parse_all(solver, log_info)
-    print(solver.wm.get_value("тестовая_машина"))
-    print("parsed name: ", solver.wm.get_value("тестовая_машина.имя").to_representation())
-    print("parsed kernel: ", solver.wm.get_value("тестовая_машина.ядро").to_representation())
-    print("parsed arch: ",
- solver.wm.get_value("тестовая_машина.архитектура").to_representation()) 
+    #print(solver.wm.get_value("тестовая_машина"))
+    print("parsed test broken_lib_path status: ", solver.wm.get_value("тест_broken_lib_path.статус").to_representation())
+    #print("parsed kernel: ", solver.wm.get_value("тестовая_машина.ядро").to_representation())
+    #print("parsed arch: ", solver.wm.get_value("тестовая_машина.архитектура").to_representation()) 
     return
     
 main()
