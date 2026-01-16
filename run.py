@@ -12,6 +12,8 @@ kbs_path="./TestingSystem.kbs"
 base_logs_folder="../example_logs/"
 test_types=["smoke","bench","stress","tail","hand"]
 
+import kbs_filler
+
 kbs_set_variables = set()
 
 # Соберем парсеры из модулей
@@ -27,7 +29,6 @@ for module_name in modules:
         exec(f.read(), globals())
         parsers.extend(globals().get(module_name))
 print("Will be using parsers: ", parsers)
-
 
 def find_logs():
     logs=[]
@@ -54,25 +55,29 @@ def find_logs():
     return logs
 
 
-def parse_all(solver, logs, test_type):
+def parse_all(solver, log_info):
     # Если нет логов этого типа (или они сломаны) - пропускаем
-    log = [log for log in logs if log["type"] == test_type][0]
-    if log["folder"] == None or log["machine"] == None:
-        print(f"WARNING: trying to process not existing log directory for {test_type} tests")
+    if log_info["folder"] == None or log_info["machine"] == None:
+        print(f"WARNING: trying to process not existing log directory for {log_info['type']} tests")
         return solver
     for parser in parsers:
         func = globals().get(parser)
         if callable(func):
-            solver = func(solver, log)
+            solver = func(solver, log_info)
     return solver
 
 def main():
-    knowledge_base = KnowledgeBase.from_krl(open(kbs_path).read())
-    solver = Solver(knowledge_base, SOLVER_MODE.forwards, goals=[])
-
+    print("Search for logs...")
     logs = find_logs()
     print("Start analysing SMOKE")
-    solver = parse_all(solver, logs, "smoke")
+    log_info = logs[0]
+    print("Filling knowledge base...")
+    prepared_kbs_path = kbs_filler.update_kbs(kbs_path, log_info)
+    print("Reading knowledge base and building solver...")
+    knowledge_base = KnowledgeBase.from_krl(open(prepared_kbs_path).read())
+    solver = Solver(knowledge_base, SOLVER_MODE.forwards, goals=[])
+    print("Parsing facts to working memory...")
+    solver = parse_all(solver, log_info)
     print(solver.wm.get_value("тестовая_машина"))
     print("parsed name: ", solver.wm.get_value("тестовая_машина.имя").to_representation())
     print("parsed kernel: ", solver.wm.get_value("тестовая_машина.ядро").to_representation())
