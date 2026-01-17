@@ -2,6 +2,8 @@ import os
 
 from at_solver.core.solver import Solver
 
+machine_info_fillers = []
+
 machine_info_parsers = [
 # folder/machine/data_about_machine/
 "parse_machine_kernel",
