@@ -107,8 +107,8 @@ def parse_all(solver, log_info):
 def main():
     print("Search for logs...")
     logs = find_logs()
-    print("Start analysing SMOKE")
-    log_info = logs[0]
+    print("Start analysing TAIL")
+    log_info = logs[3]
     print("Filling knowledge base...")
     fill_all(kbs_path, log_info)
     print("Reading knowledge base and building solver...")
@@ -117,7 +117,7 @@ def main():
     print("Parsing facts to working memory...")
     solver = parse_all(solver, log_info)
     #print(solver.wm.get_value("тестовая_машина"))
-    print("parsed test broken_lib_path status: ", solver.wm.get_value("тест_broken_lib_path.статус").to_representation())
+    #print("parsed test broken_lib_path status: ", solver.wm.get_value("тест_broken_lib_path.статус").to_representation())
     #print("parsed kernel: ", solver.wm.get_value("тестовая_машина.ядро").to_representation())
     #print("parsed arch: ", solver.wm.get_value("тестовая_машина.архитектура").to_representation()) 
     return
