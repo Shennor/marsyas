@@ -47,7 +47,7 @@ class LogAnalyzerApp(QMainWindow):
         self.initUI()
         
     def initUI(self):
-        self.setWindowTitle('Выбор папки для анализа')
+        self.setWindowTitle('Прототип: Решатель проблем (демо)')
         self.setGeometry(100, 100, 800, 600)
         
         # Центральный виджет
@@ -57,33 +57,36 @@ class LogAnalyzerApp(QMainWindow):
         # Основной layout
         main_layout = QVBoxLayout(central_widget)
         
+        # Секция выбора папки
+        folder_group = QGroupBox("Выбор папки")
+        folder_layout = QVBoxLayout()
+        
         # Панель выбора папки
         folder_panel = QHBoxLayout()
         self.folder_input = QLineEdit()
         self.folder_input.setPlaceholderText('Выберите папку или введите путь')
-        folder_panel.addWidget(QLabel('Папка:'))
-        folder_panel.addWidget(self.folder_input)
         
         browse_button = QPushButton('Выбрать папку')
         browse_button.clicked.connect(self.browse_directory)
-        folder_panel.addWidget(browse_button)
         
-        # Секция выбора папки
-        folder_group = QGroupBox("Выбор папки")
-        folder_layout = QVBoxLayout()
-        folder_layout.addLayout(folder_panel)
+        folder_panel.addWidget(QLabel('Папка:'))
+        folder_panel.addWidget(self.folder_input)
+        folder_panel.addWidget(browse_button)
+
+        
+        # Кнопки действий
+        action_panel = QHBoxLayout()
         
         
         clear_button = QPushButton('Очистить')
         clear_button.clicked.connect(self.clear_all)
         
-        action_panel = QHBoxLayout()
         action_panel.addWidget(clear_button)
         action_panel.addStretch()
+        
+        folder_layout.addLayout(folder_panel)
         folder_layout.addLayout(action_panel)
         folder_group.setLayout(folder_layout)
-        
-        # Кнопки действий
         
         # Список файлов
         files_group = QGroupBox("Найденные файлы")
@@ -113,6 +116,9 @@ class LogAnalyzerApp(QMainWindow):
         # Добавляем все в основной layout
         main_layout.addWidget(folder_group)
         main_layout.addWidget(files_group)
+
+        # Создать меню и титульный экран
+        self.create_menu()
         
         # Список файлов для передачи в функцию
         self.found_files = []
@@ -322,13 +328,104 @@ class LogAnalyzerApp(QMainWindow):
         self.file_count_label.setText('Файлов: 0')
         self.total_size_label.setText('Размер: 0 Б')
 
+    def create_menu(self):
+        """Создать меню приложения, в т.ч. Консультация->Начать"""
+        menubar = self.menuBar()
+        consult_menu = menubar.addMenu('Консультация')
+
+        start_action = QAction('Начать', self)
+        start_action.setStatusTip('Начать режим консультации')
+        start_action.triggered.connect(self.start_consultation)
+        consult_menu.addAction(start_action)
+
+    def start_consultation(self):
+        """Запустить режим консультации: показать информацию и выбрать файл журналов"""
+        info_text = (
+            "Режим консультации позволяет получить рекомендации на основе прямого вывода "
+            "(с использованием АТ-РЕШАТЕЛЯ).\n\n"
+            "Далее Вам будет предложено выбрать файл журналов тестирования, на основе которого "
+            "будет сформировано начальное состояние рабочей памяти."
+        )
+
+        QMessageBox.information(self, 'Режим консультации', info_text)
+
+        # Показать главное окно и открыть диалог выбора папки для анализа
+        self.show()
+        try:
+            self.raise_()
+        except Exception:
+            pass
+
+        dir_path = QFileDialog.getExistingDirectory(
+            self,
+            'Выберите папку для анализа',
+            '',
+            QFileDialog.ShowDirsOnly
+        )
+        if dir_path:
+            # Установить выбранную папку и запустить сканирование
+            self.folder_input.setText(dir_path)
+            self.files_text.clear()
+            self.scan_directory()
+
+            QMessageBox.information(self, 'Папка выбрана', 'Папка выбрана и просканирована. Вы можете нажать "Далее" для анализа.')
+
+    def show_title_screen(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle('Прототип ИЭС "Диагностика состояния ОС для процессоров семейства Эльбрус на основе артефактов тестирования"')
+        dialog.setModal(True)
+        dialog.setFixedSize(560, 320)
+
+        layout = QVBoxLayout()
+
+        title = QLabel('<h1>Прототип ИЭС</h1>')
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        title = QLabel('<h1>"Диагностика состояния ОС </h1>')
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        title = QLabel('<h1>для процессоров семейства Эльбрус </h1>')
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+        title = QLabel('<h1>на основе артефактов тестирования"</h1>')
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
+
+        subtitle = QLabel('Демонстрационный интерфейс для режима консультации')
+        subtitle.setAlignment(Qt.AlignCenter)
+        layout.addWidget(subtitle)
+
+        info = QLabel(
+            'Режим консультации позволяет получать рекомендации на основе прямого вывода.\n'
+            'Для начала нажмите "Начать консультацию" — вам предложат выбрать файл журналов тестирования.'
+        )
+        info.setWordWrap(True)
+        info.setAlignment(Qt.AlignCenter)
+        layout.addWidget(info)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        start_btn = QPushButton('Начать консультацию')
+        start_btn.clicked.connect(lambda: (dialog.accept(), self.start_consultation()))
+        btn_layout.addWidget(start_btn)
+
+        #close_btn = QPushButton('Закрыть')
+        #close_btn.clicked.connect(dialog.reject)
+        #btn_layout.addWidget(close_btn)
+        btn_layout.addStretch()
+
+        layout.addLayout(btn_layout)
+
+        dialog.setLayout(layout)
+        dialog.exec_()
 
 def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
     
     window = LogAnalyzerApp()
-    window.show()
+    # Показываем только титульный экран при старте; главное окно откроется при запросе консультации
+    window.show_title_screen()
     
     sys.exit(app.exec_())
 
